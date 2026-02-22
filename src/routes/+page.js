@@ -9,7 +9,7 @@ export async function load({ url, fetch }) { // <-- Обрати внимани�
   const apiBase = 'https://shikimori.one/api/animes';
   
   const params = new URLSearchParams({
-    limit: '20',
+    limit: '50',
     order: 'popularity',
     search: search
   });

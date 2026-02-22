@@ -1,159 +1,208 @@
-<!-- src/routes/+page.svelte -->
 <script>
-  // Получаем данные из функции load (из шага 2)
   export let data;
-
-  // Для поиска
   let searchTerm = '';
-  
-  // Базовый URL для картинок
   const SHIKIMORI_URL = 'https://shikimori.one';
 
-  // Функция поиска (перезагружает страницу с новым параметром)
   function handleSearch() {
     window.location.href = `/?q=${searchTerm}`;
   }
 </script>
 
-<main class="container">
-  <h1>Любимое для нефорёнка Ансока</h1>
+<div class="app-container">
+  <!-- Хедер с поиском -->
+  <header>
+    <h1 class="glitch-text">Нефорня<span class="dot">.</span>Ансока</h1>
+    
+    <div class="search-wrapper">
+      <input 
+        type="text" 
+        placeholder="Поиск аниме..." 
+        bind:value={searchTerm} 
+        on:keydown={(e) => e.key === 'Enter' && handleSearch()}
+      />
+      <!-- Добавили aria-label="Поиск" -->
+<button on:click={handleSearch} aria-label="Поиск">
+  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+</button>
+    </div>
+  </header>
 
-  <!-- Поиск -->
-  <div class="search-box">
-    <input 
-      type="text" 
-      placeholder="Найти аниме..." 
-      bind:value={searchTerm} 
-      on:keydown={(e) => e.key === 'Enter' && handleSearch()}
-    />
-    <button on:click={handleSearch}>Поиск</button>
-  </div>
-
-  <!-- Сетка с аниме -->
-  <div class="grid">
+  <!-- Сетка карточек -->
+  <main class="grid">
     {#each data.animes as anime}
-      <div class="card">
-        <div class="image-wrapper">
-            <!-- Собираем полный путь к картинке -->
-            <img src="{SHIKIMORI_URL}{anime.image.original}" alt={anime.russian || anime.name} />
-            <div class="score">{anime.score}</div>
+      <a href="/anime/{anime.id}" class="card">
+        <div class="image-box">
+          <img src="{SHIKIMORI_URL}{anime.image.original}" alt={anime.name} loading="lazy" />
+          <div class="overlay"></div>
+          <div class="score">{anime.score}</div>
         </div>
-        <div class="info">
+        <div class="content">
           <h3>{anime.russian || anime.name}</h3>
-          <p>Эпизоды: {anime.episodes || '?'}</p>
-          <a href="{SHIKIMORI_URL}{anime.url}" target="_blank" class="btn">Подробнее</a>
+          <div class="meta">
+            <span class="type">{anime.kind}</span>
+            <span class="episodes">{anime.episodes || '?'} ep</span>
+          </div>
         </div>
-      </div>
+      </a>
     {:else}
-      <p>Ничего не найдено :(</p>
+      <div class="empty">Ничего не найдено... 🕸️</div>
     {/each}
-  </div>
-</main>
+  </main>
+</div>
 
 <style>
-  /* Простые стили для красоты */
-  :global(body) {
-    font-family: sans-serif;
-    background-color: #1a1a1a;
-    color: #fff;
-    margin: 0;
-  }
-
-  .container {
-    max-width: 1200px;
+  .app-container {
+    max-width: 1400px;
     margin: 0 auto;
     padding: 20px;
   }
 
-  h1 { text-align: center; color: #ff9800; }
-
-  .search-box {
+  /* --- HEADER --- */
+  header {
     display: flex;
-    justify-content: center;
-    gap: 10px;
-    margin-bottom: 30px;
-  }
-
-  input {
-    padding: 10px;
-    border-radius: 5px;
-    border: none;
-    width: 300px;
-  }
-
-  button {
-    padding: 10px 20px;
-    background: #ff9800;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: bold;
-  }
-
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 50px;
     gap: 20px;
   }
 
+  h1 {
+    font-size: 3rem;
+    font-weight: 900;
+    letter-spacing: -2px;
+    margin: 0;
+    text-transform: uppercase;
+  }
+  
+  .dot { color: var(--accent); }
+
+  .search-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 500px;
+    display: flex;
+    border-bottom: 2px solid var(--border);
+    transition: 0.3s;
+  }
+
+  .search-wrapper:focus-within {
+    border-color: var(--accent);
+    box-shadow: 0 10px 20px -10px var(--accent-dim);
+  }
+
+  input {
+    width: 100%;
+    padding: 15px;
+    background: transparent;
+    border: none;
+    color: var(--text-main);
+    font-size: 1.1rem;
+    outline: none;
+  }
+
+  button {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: 0.2s;
+  }
+  
+  button:hover { color: var(--accent); }
+
+  /* --- GRID --- */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 25px;
+  }
+
+  /* --- CARD --- */
   .card {
-    background: #2d2d2d;
-    border-radius: 10px;
+    background: var(--card-bg);
+    border-radius: var(--radius);
     overflow: hidden;
-    transition: transform 0.2s;
+    position: relative;
+    border: 1px solid var(--border);
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    display: flex;
+    flex-direction: column;
   }
 
   .card:hover {
-    transform: translateY(-5px);
+    transform: translateY(-7px);
+    border-color: var(--accent);
+    box-shadow: 0 0 20px rgba(0, 255, 65, 0.15);
   }
 
-  .image-wrapper {
+  .image-box {
     position: relative;
-    height: 300px;
+    height: 320px;
+    overflow: hidden;
   }
 
-  img {
+  .image-box img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    transition: 0.5s;
+  }
+
+  .card:hover img { transform: scale(1.05); }
+
+  .overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 50%;
+    background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
   }
 
   .score {
     position: absolute;
     top: 10px;
     right: 10px;
-    background: rgba(0,0,0,0.7);
-    color: #4caf50;
-    padding: 5px 8px;
-    border-radius: 5px;
+    background: rgba(0,0,0,0.8);
+    color: var(--accent);
+    padding: 4px 8px;
+    border-radius: 6px;
     font-weight: bold;
+    font-size: 0.9rem;
+    border: 1px solid var(--accent);
+    backdrop-filter: blur(4px);
   }
 
-  .info {
+  .content {
     padding: 15px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
   }
 
   h3 {
-    margin: 0 0 10px 0;
+    margin: 0 0 10px;
     font-size: 1rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    line-height: 1.4;
+    color: #eee;
   }
 
-  p { font-size: 0.9rem; color: #aaa; }
-
-  .btn {
-    display: block;
-    text-align: center;
-    background: #444;
-    color: white;
-    text-decoration: none;
-    padding: 8px;
-    border-radius: 5px;
-    margin-top: 10px;
-    font-size: 0.9rem;
+  .meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
   }
   
-  .btn:hover { background: #555; }
+  .card:hover h3 { color: var(--accent); }
+
+  .empty {
+    grid-column: 1 / -1;
+    text-align: center;
+    color: var(--text-muted);
+    margin-top: 50px;
+  }
 </style>
